@@ -180,7 +180,7 @@ Ort::Value OfflineSenseVoiceModel::Forward(Ort::Value features) const {
 }
 
 const OfflineSenseVoiceModelMetaData &OfflineSenseVoiceModel::GetModelMetadata()
-    const {
+const {
   return impl_->GetModelMetadata();
 }
 

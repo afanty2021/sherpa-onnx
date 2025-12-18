@@ -308,7 +308,7 @@ OfflineTtsZipvoiceModel::OfflineTtsZipvoiceModel(
 OfflineTtsZipvoiceModel::~OfflineTtsZipvoiceModel() = default;
 
 const OfflineTtsZipvoiceModelMetaData &OfflineTtsZipvoiceModel::GetMetaData()
-    const {
+const {
   return impl_->GetMetaData();
 }
 

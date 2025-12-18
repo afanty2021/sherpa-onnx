@@ -26,35 +26,19 @@
 #  ./scripts/check_style_cpplint.sh 2
 
 
-cpplint_version="2.0.2"
+
 cur_dir=$(cd $(dirname $BASH_SOURCE) && pwd)
 sherpa_onnx_dir=$(cd $cur_dir/.. && pwd)
 
 build_dir=$sherpa_onnx_dir/build
 mkdir -p $build_dir
 
-cpplint_src=$build_dir/cpplint-${cpplint_version}/cpplint.py
+cpplint_dir="$build_dir/cpplint"
+cpplint_src="$cpplint_dir/cpplint.py"
 
-if [ ! -d "$build_dir/cpplint-${cpplint_version}" ]; then
+if [ ! -d "$cpplint_dir" ]; then
   pushd $build_dir
-  if command -v wget &> /dev/null; then
-    wget https://github.com/cpplint/cpplint/archive/${cpplint_version}.tar.gz
-  elif command -v curl &> /dev/null; then
-    curl -O -SL https://github.com/cpplint/cpplint/archive/${cpplint_version}.tar.gz
-  else
-    echo "Please install wget or curl to download cpplint"
-    exit 1
-  fi
-  tar xf ${cpplint_version}.tar.gz
-  rm ${cpplint_version}.tar.gz
-
-  # cpplint will report the following error for: __host__ __device__ (
-  #
-  #     Extra space before ( in function call  [whitespace/parens] [4]
-  #
-  # the following patch disables the above error
-  sed -i "3490i\        not Search(r'__host__ __device__\\\s+\\\(', fncall) and" $cpplint_src
-  popd
+  git clone --depth=1 https://github.com/cpplint/cpplint.git
 fi
 
 source $sherpa_onnx_dir/scripts/utils.sh
