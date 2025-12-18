@@ -14,7 +14,7 @@ project(sherpa-onnx)
 # Remember to update
 # ./CHANGELOG.md
 # ./new-release.sh
-set(SHERPA_ONNX_VERSION "1.12.19")
+set(SHERPA_ONNX_VERSION "1.12.20")
 
 # Disable warning about
 #
@@ -496,8 +496,6 @@ if(SHERPA_ONNX_ENABLE_WEBSOCKET)
 endif()
 
 if(SHERPA_ONNX_ENABLE_TTS)
-  include(cppinyin)
-
   include(espeak-ng-for-piper)
   set(ESPEAK_NG_DIR ${espeak_ng_SOURCE_DIR})
   message(STATUS "ESPEAK_NG_DIR: ${ESPEAK_NG_DIR}")

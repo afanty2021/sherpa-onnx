@@ -216,11 +216,11 @@ final class SherpaOnnxOfflineTtsKittenModelConfig extends Struct {
 
 final class SherpaOnnxOfflineTtsZipVoiceModelConfig extends Struct {
   external Pointer<Utf8> tokens;
-  external Pointer<Utf8> textModel;
-  external Pointer<Utf8> flowMatchingModel;
+  external Pointer<Utf8> encoder;
+  external Pointer<Utf8> decoder;
   external Pointer<Utf8> vocoder;
   external Pointer<Utf8> dataDir;
-  external Pointer<Utf8> pinyinDict;
+  external Pointer<Utf8> lexicon;
 
   @Float()
   external double featScale;
