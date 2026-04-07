@@ -8,7 +8,6 @@
 #include <regex>  // NOLINT
 #include <sstream>
 #include <string>
-#include <strstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -53,14 +52,14 @@ class MeloTtsLexicon::Impl {
     {
       auto buf = ReadFile(mgr, tokens);
 
-      std::istrstream is(buf.data(), buf.size());
+      std::istringstream is(std::string(buf.data(), buf.size()));
       InitTokens(is);
     }
 
     {
       auto buf = ReadFile(mgr, lexicon);
 
-      std::istrstream is(buf.data(), buf.size());
+      std::istringstream is(std::string(buf.data(), buf.size()));
       InitLexicon(is);
     }
   }
@@ -227,6 +226,12 @@ class MeloTtsLexicon::Impl {
 
     if (!token2id_.count("、") && token2id_.count("，")) {
       token2id_["、"] = token2id_["，"];
+    }
+
+    // Map 'v' to 'V' token (same as post_replace_ph in MeloTTS)
+    // Only for English models
+    if (meta_data_.language == "en" && token2id_.count("V")) {
+      token2id_["v"] = token2id_["V"];
     }
   }
 

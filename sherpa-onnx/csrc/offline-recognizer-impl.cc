@@ -5,8 +5,8 @@
 #include "sherpa-onnx/csrc/offline-recognizer-impl.h"
 
 #include <memory>
+#include <sstream>
 #include <string>
-#include <strstream>
 #include <utility>
 #include <vector>
 
@@ -26,16 +26,21 @@
 #include "sherpa-onnx/csrc/file-utils.h"
 #include "sherpa-onnx/csrc/macros.h"
 #include "sherpa-onnx/csrc/offline-recognizer-canary-impl.h"
+#include "sherpa-onnx/csrc/offline-recognizer-cohere-transcribe-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-ctc-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-fire-red-asr-impl.h"
+#include "sherpa-onnx/csrc/offline-recognizer-funasr-nano-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-moonshine-impl.h"
+#include "sherpa-onnx/csrc/offline-recognizer-moonshine-v2-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-paraformer-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-paraformer-tpl-impl.h"
+#include "sherpa-onnx/csrc/offline-recognizer-qwen3-asr-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-sense-voice-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-sense-voice-tpl-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-transducer-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-transducer-nemo-impl.h"
 #include "sherpa-onnx/csrc/offline-recognizer-whisper-impl.h"
+#include "sherpa-onnx/csrc/offline-recognizer-whisper-tpl-impl.h"
 #include "sherpa-onnx/csrc/text-utils.h"
 
 #if SHERPA_ONNX_ENABLE_RKNN
@@ -55,9 +60,11 @@
 #include "sherpa-onnx/csrc/ascend/offline-paraformer-model-ascend.h"
 #include "sherpa-onnx/csrc/ascend/offline-recognizer-zipformer-ctc-ascend-impl.h"
 #include "sherpa-onnx/csrc/ascend/offline-sense-voice-model-ascend.h"
+#include "sherpa-onnx/csrc/ascend/offline-whisper-model-ascend.h"
 #endif
 
 #if SHERPA_ONNX_ENABLE_QNN
+#include "sherpa-onnx/csrc/qnn/offline-paraformer-model-qnn.h"
 #include "sherpa-onnx/csrc/qnn/offline-recognizer-zipformer-ctc-qnn-impl.h"
 #include "sherpa-onnx/csrc/qnn/offline-sense-voice-model-qnn.h"
 #endif
@@ -152,10 +159,13 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
           config);
     } else if (!config.model_config.zipformer_ctc.model.empty()) {
       return std::make_unique<OfflineRecognizerZipformerCtcAscendImpl>(config);
+    } else if (!config.model_config.whisper.encoder.empty()) {
+      return std::make_unique<
+          OfflineRecognizerWhisperTplImpl<OfflineWhisperModelAscend>>(config);
     } else {
       SHERPA_ONNX_LOGE(
-          "Only SenseVoice, Paraformer, and Zipformer CTC models are currently "
-          "supported by Ascend NPU for non-streaming ASR.");
+          "Only SenseVoice, Paraformer, Whisper, and Zipformer CTC models are "
+          "currently supported by Ascend NPU for non-streaming ASR.");
       SHERPA_ONNX_EXIT(-1);
       return nullptr;
     }
@@ -176,12 +186,20 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
       return std::make_unique<
           OfflineRecognizerSenseVoiceTplImpl<OfflineSenseVoiceModelQnn>>(
           config);
-    } else if (!config.model_config.zipformer_ctc.model.empty()) {
+    } else if (!config.model_config.zipformer_ctc.model.empty() ||
+               !config.model_config.zipformer_ctc.qnn_config.context_binary
+                    .empty()) {
       return std::make_unique<OfflineRecognizerZipformerCtcQnnImpl>(config);
+    } else if (!config.model_config.paraformer.model.empty() ||
+               !config.model_config.paraformer.qnn_config.context_binary
+                    .empty()) {
+      return std::make_unique<
+          OfflineRecognizerParaformerTplImpl<OfflineParaformerModelQnn>>(
+          config);
     } else {
       SHERPA_ONNX_LOGE(
-          "Only SenseVoice models and Zipformer CTC models are currently "
-          "supported by qnn for non-streaming ASR.");
+          "Only SenseVoice, Paraformer, and Zipformer CTC models are currently "
+          "supported by QNN for non-streaming ASR.");
       SHERPA_ONNX_EXIT(-1);
       return nullptr;
     }
@@ -199,6 +217,14 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
     return std::make_unique<OfflineRecognizerSenseVoiceImpl>(config);
   }
 
+  if (!config.model_config.funasr_nano.encoder_adaptor.empty()) {
+    return std::make_unique<OfflineRecognizerFunASRNanoImpl>(config);
+  }
+
+  if (!config.model_config.qwen3_asr.conv_frontend.empty()) {
+    return std::make_unique<OfflineRecognizerQwen3ASRImpl>(config);
+  }
+
   if (!config.model_config.paraformer.model.empty()) {
     return std::make_unique<OfflineRecognizerParaformerImpl>(config);
   }
@@ -208,6 +234,8 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
       !config.model_config.tdnn.model.empty() ||
       !config.model_config.wenet_ctc.model.empty() ||
       !config.model_config.omnilingual.model.empty() ||
+      !config.model_config.medasr.model.empty() ||
+      !config.model_config.fire_red_asr_ctc.model.empty() ||
       !config.model_config.dolphin.model.empty()) {
     return std::make_unique<OfflineRecognizerCtcImpl>(config);
   }
@@ -216,12 +244,20 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
     return std::make_unique<OfflineRecognizerWhisperImpl>(config);
   }
 
+  if (!config.model_config.cohere_transcribe.encoder.empty()) {
+    return std::make_unique<OfflineRecognizerCohereTranscribeImpl>(config);
+  }
+
   if (!config.model_config.fire_red_asr.encoder.empty()) {
     return std::make_unique<OfflineRecognizerFireRedAsrImpl>(config);
   }
 
   if (!config.model_config.moonshine.preprocessor.empty()) {
     return std::make_unique<OfflineRecognizerMoonshineImpl>(config);
+  }
+
+  if (!config.model_config.moonshine.merged_decoder.empty()) {
+    return std::make_unique<OfflineRecognizerMoonshineV2Impl>(config);
   }
 
   if (!config.model_config.canary.encoder.empty()) {
@@ -473,10 +509,14 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
     } else if (!config.model_config.zipformer_ctc.model.empty()) {
       return std::make_unique<OfflineRecognizerZipformerCtcAscendImpl>(mgr,
                                                                        config);
+    } else if (!config.model_config.whisper.encoder.empty()) {
+      return std::make_unique<
+          OfflineRecognizerWhisperTplImpl<OfflineWhisperModelAscend>>(mgr,
+                                                                      config);
     } else {
       SHERPA_ONNX_LOGE(
-          "Only SenseVoice, Paraformer, and Zipformer CTC models are currently "
-          "supported by Ascend NPU for non-streaming ASR.");
+          "Only SenseVoice, Paraformer, Whisper, and Zipformer CTC models are "
+          "currently supported by Ascend NPU for non-streaming ASR.");
       SHERPA_ONNX_EXIT(-1);
       return nullptr;
     }
@@ -497,13 +537,21 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
       return std::make_unique<
           OfflineRecognizerSenseVoiceTplImpl<OfflineSenseVoiceModelQnn>>(
           mgr, config);
-    } else if (!config.model_config.zipformer_ctc.model.empty()) {
+    } else if (!config.model_config.zipformer_ctc.model.empty() ||
+               !config.model_config.zipformer_ctc.qnn_config.context_binary
+                    .empty()) {
       return std::make_unique<OfflineRecognizerZipformerCtcQnnImpl>(mgr,
                                                                     config);
+    } else if (!config.model_config.paraformer.model.empty() ||
+               !config.model_config.paraformer.qnn_config.context_binary
+                    .empty()) {
+      return std::make_unique<
+          OfflineRecognizerParaformerTplImpl<OfflineParaformerModelQnn>>(
+          mgr, config);
     } else {
       SHERPA_ONNX_LOGE(
-          "Only SenseVoice models and Zipformer CTC models are currently "
-          "supported by qnn for non-streaming ASR.");
+          "Only SenseVoice, Paraformer, and Zipformer CTC models are currently "
+          "supported by QNN for non-streaming ASR.");
       SHERPA_ONNX_EXIT(-1);
       return nullptr;
     }
@@ -521,6 +569,10 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
     return std::make_unique<OfflineRecognizerSenseVoiceImpl>(mgr, config);
   }
 
+  if (!config.model_config.funasr_nano.encoder_adaptor.empty()) {
+    return std::make_unique<OfflineRecognizerFunASRNanoImpl>(mgr, config);
+  }
+
   if (!config.model_config.paraformer.model.empty()) {
     return std::make_unique<OfflineRecognizerParaformerImpl>(mgr, config);
   }
@@ -530,12 +582,18 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
       !config.model_config.tdnn.model.empty() ||
       !config.model_config.wenet_ctc.model.empty() ||
       !config.model_config.omnilingual.model.empty() ||
+      !config.model_config.medasr.model.empty() ||
+      !config.model_config.fire_red_asr_ctc.model.empty() ||
       !config.model_config.dolphin.model.empty()) {
     return std::make_unique<OfflineRecognizerCtcImpl>(mgr, config);
   }
 
   if (!config.model_config.whisper.encoder.empty()) {
     return std::make_unique<OfflineRecognizerWhisperImpl>(mgr, config);
+  }
+
+  if (!config.model_config.cohere_transcribe.encoder.empty()) {
+    return std::make_unique<OfflineRecognizerCohereTranscribeImpl>(mgr, config);
   }
 
   if (!config.model_config.fire_red_asr.encoder.empty()) {
@@ -546,8 +604,16 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
     return std::make_unique<OfflineRecognizerMoonshineImpl>(mgr, config);
   }
 
+  if (!config.model_config.moonshine.merged_decoder.empty()) {
+    return std::make_unique<OfflineRecognizerMoonshineV2Impl>(mgr, config);
+  }
+
   if (!config.model_config.canary.encoder.empty()) {
     return std::make_unique<OfflineRecognizerCanaryImpl>(mgr, config);
+  }
+
+  if (!config.model_config.qwen3_asr.conv_frontend.empty()) {
+    return std::make_unique<OfflineRecognizerQwen3ASRImpl>(mgr, config);
   }
 
   // TODO(fangjun): Refactor it. We only need to use model type for the
@@ -568,6 +634,7 @@ std::unique_ptr<OfflineRecognizerImpl> OfflineRecognizerImpl::Create(
     } else if (model_type == "whisper") {
       return std::make_unique<OfflineRecognizerWhisperImpl>(mgr, config);
     } else if (model_type == "moonshine") {
+      // unreachable code
       return std::make_unique<OfflineRecognizerMoonshineImpl>(mgr, config);
     } else {
       SHERPA_ONNX_LOGE(
@@ -769,7 +836,7 @@ OfflineRecognizerImpl::OfflineRecognizerImpl(
         SHERPA_ONNX_LOGE("rule fst: %s", f.c_str());
       }
       auto buf = ReadFile(mgr, f);
-      std::istrstream is(buf.data(), buf.size());
+      std::istringstream is(std::string(buf.data(), buf.size()));
       itn_list_.push_back(std::make_unique<kaldifst::TextNormalizer>(is));
     }
   }
@@ -787,7 +854,7 @@ OfflineRecognizerImpl::OfflineRecognizerImpl(
       auto buf = ReadFile(mgr, f);
 
       std::unique_ptr<std::istream> s(
-          new std::istrstream(buf.data(), buf.size()));
+          new std::istringstream(std::string(buf.data(), buf.size())));
 
       std::unique_ptr<fst::FarReader<fst::StdArc>> reader(
           fst::FarReader<fst::StdArc>::Open(std::move(s)));

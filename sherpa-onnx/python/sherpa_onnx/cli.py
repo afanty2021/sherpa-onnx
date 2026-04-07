@@ -1,12 +1,13 @@
 # Copyright (c)  2023  Xiaomi Corporation
 
 import logging
+
 try:
     import click
 except ImportError:
-    print('Please run')
-    print('  pip install click')
-    print('before you continue')
+    print("Please run")
+    print("  pip install click")
+    print("before you continue")
     raise
 
 from pathlib import Path
@@ -36,12 +37,21 @@ def cli():
 @click.option(
     "--tokens-type",
     type=click.Choice(
-        ["cjkchar", "bpe", "cjkchar+bpe", "fpinyin", "ppinyin"], case_sensitive=True
+        [
+            "cjkchar",
+            "bpe",
+            "cjkchar+bpe",
+            "fpinyin",
+            "ppinyin",
+            "phone+ppinyin",
+        ],
+        case_sensitive=True,
     ),
     required=True,
-    help="""The type of modeling units, should be cjkchar, bpe, cjkchar+bpe, fpinyin or ppinyin.
+    help="""The type of modeling units, should be cjkchar, bpe, cjkchar+bpe, fpinyin, ppinyin or phone+ppinyin.
     fpinyin means full pinyin, each cjkchar has a pinyin(with tone).
     ppinyin means partial pinyin, it splits pinyin into initial and final,
+    phone means English phonemes in CMU dictionary format.
     """,
 )
 @click.option(
@@ -49,15 +59,25 @@ def cli():
     type=str,
     help="The path to bpe.model. Only required when tokens-type is bpe or cjkchar+bpe.",
 )
+@click.option(
+    "--lexicon",
+    type=str,
+    help="The path to lexicon.txt. Only required when tokens-type is phone+ppinyin.",
+)
 def encode_text(
-    input: Path, output: Path, tokens: Path, tokens_type: str, bpe_model: Path
+    input: Path,
+    output: Path,
+    tokens: Path,
+    tokens_type: str,
+    bpe_model: Path,
+    lexicon: Path,
 ):
     """
     Encode the texts given by the INPUT to tokens and write the results to the OUTPUT.
     Each line in the texts contains the original phrase, it might also contain some
-    extra items, for example, the boosting score (startting with :), the triggering
-    threshold (startting with #, only used in keyword spotting task) and the original
-    phrase (startting with @). Note: the extra items will be kept same in the output.
+    extra items, for example, the boosting score (starting with :), the triggering
+    threshold (starting with #, only used in keyword spotting task) and the original
+    phrase (starting with @). Note: the extra items will be kept same in the output.
 
     example input 1 (tokens_type = ppinyin):
 
@@ -101,7 +121,11 @@ def encode_text(
             extra_info.append(extra)
 
     encoded_texts = text2token(
-        texts, tokens=tokens, tokens_type=tokens_type, bpe_model=bpe_model
+        texts,
+        tokens=tokens,
+        tokens_type=tokens_type,
+        bpe_model=bpe_model,
+        lexicon=lexicon,
     )
     with open(output, "w", encoding="utf8") as f:
         for i, txt in enumerate(encoded_texts):

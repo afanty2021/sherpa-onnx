@@ -36,6 +36,12 @@ def load_torch_model():
     model = nano.Nano()
 
     state_dict = torch.load("./model.pt", map_location="cpu")
+
+    to_delete = [k for k in state_dict if "llm" in k or "audio_adaptor" in k]
+
+    for k in to_delete:
+        del state_dict[k]
+
     model.load_state_dict(state_dict, strict=True)
     model.eval()
 
@@ -47,6 +53,8 @@ def load_torch_model():
 @torch.no_grad()
 def main():
     model = load_torch_model()
+    num_params = sum(p.numel() for p in model.parameters())
+    print("num_params (M)", num_params, num_params / 1000000)
 
     samples, sample_rate = test_onnx.load_audio("./zh.wav")
     assert sample_rate == 16000, sample_rate

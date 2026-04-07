@@ -46,9 +46,9 @@ def get_args():
         help="""Path to the input texts.
 
         Each line in the texts contains the original phrase, it might also contain some
-        extra items, for example, the boosting score (startting with :), the triggering
-        threshold (startting with #, only used in keyword spotting task) and the original
-        phrase (startting with @). Note: extra items will be kept in the output.
+        extra items, for example, the boosting score (starting with :), the triggering
+        threshold (starting with #, only used in keyword spotting task) and the original
+        phrase (starting with @). Note: extra items will be kept in the output.
 
         example input 1 (tokens_type = ppinyin):
 
@@ -87,10 +87,19 @@ def get_args():
         "--tokens-type",
         type=str,
         required=True,
-        choices=["cjkchar", "bpe", "cjkchar+bpe", "fpinyin", "ppinyin"],
-        help="""The type of modeling units, should be cjkchar, bpe, cjkchar+bpe, fpinyin or ppinyin.
+        choices=[
+            "cjkchar",
+            "bpe",
+            "cjkchar+bpe",
+            "fpinyin",
+            "ppinyin",
+            "phone+ppinyin",
+        ],
+        help="""The type of modeling units, should be cjkchar, bpe, cjkchar+bpe, fpinyin
+        ppinyin or phone+ppinyin.
         fpinyin means full pinyin, each cjkchar has a pinyin(with tone).
         ppinyin means partial pinyin, it splits pinyin into initial and final,
+        phone means English phonemes in CMU dictionary format.
         """,
     )
 
@@ -98,6 +107,12 @@ def get_args():
         "--bpe-model",
         type=str,
         help="The path to bpe.model. Only required when tokens-type is bpe or cjkchar+bpe.",
+    )
+
+    parser.add_argument(
+        "--lexicon",
+        type=str,
+        help="The path to lexicon.txt. Only required when tokens-type is phone+ppinyin.",
     )
 
     parser.add_argument(
@@ -134,6 +149,7 @@ def main():
         tokens=args.tokens,
         tokens_type=args.tokens_type,
         bpe_model=args.bpe_model,
+        lexicon=args.lexicon,
     )
     with open(args.output, "w", encoding="utf8") as f:
         for i, txt in enumerate(encoded_texts):

@@ -95,7 +95,7 @@ def get_models():
             """,
         ),
         Model(
-            model_name="sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17",
+            model_name="sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17",
             idx=15,
             lang="zh_en_ko_ja_yue",
             lang2="中英粤日韩",
@@ -105,7 +105,6 @@ def get_models():
             pushd $model_name
 
             rm -rfv test_wavs
-            rm -fv model.onnx
             rm -fv *.py
 
             ls -lh
@@ -752,6 +751,278 @@ def get_models():
             lang="1600",
             lang2="1600_languages",
             short_name="omnilingual_asr_300M_ctc_int8",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-medasr-ctc-en-int8-2025-12-25",
+            idx=45,
+            lang="en",
+            lang2="英语",
+            short_name="google_medasr_ctc_int8",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-funasr-nano-int8-2025-12-30",
+            idx=46,
+            lang="multi",
+            lang2="31_languages",
+            short_name="funasr_nano_int8_2025_12_30",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03",
+            idx=47,
+            lang="wu",
+            lang2="吴语",
+            short_name="wenetspeech_wu_u2pconformer_ctc_2026_02_03_int8",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-2026-02-03",
+            idx=48,
+            lang="wu",
+            lang2="吴语",
+            short_name="wenetspeech_wu_u2pconformer_ctc_2026_02_03",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-zipformer-vi-30M-int8-2026-02-09",
+            idx=49,
+            lang="vi",
+            lang2="Vietnamese",
+            short_name="zipformer_vi_30M_int8_2026_02_09",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-fire-red-asr2-ctc-zh_en-int8-2026-02-25",
+            idx=50,
+            lang="zh_en",
+            lang2="中英",
+            short_name="fire_red_asr2_ctc_int8_2026_02_25",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-tiny-ko-quantized-2026-02-27",
+            idx=51,
+            lang="ko",
+            lang2="Korean",
+            short_name="moonshine_tiny_ko_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-tiny-ja-quantized-2026-02-27",
+            idx=52,
+            lang="ja",
+            lang2="Japanese",
+            short_name="moonshine_tiny_ja_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27",
+            idx=53,
+            lang="en",
+            lang2="English",
+            short_name="moonshine_tiny_en_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-zh-quantized-2026-02-27",
+            idx=54,
+            lang="zh",
+            lang2="Chinese",
+            short_name="moonshine_base_zh_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-vi-quantized-2026-02-27",
+            idx=55,
+            lang="vi",
+            lang2="Vietnamese",
+            short_name="moonshine_base_vi_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-uk-quantized-2026-02-27",
+            idx=56,
+            lang="uk",
+            lang2="Ukrainian",
+            short_name="moonshine_base_uk_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-ja-quantized-2026-02-27",
+            idx=57,
+            lang="ja",
+            lang2="Japanese",
+            short_name="moonshine_base_ja_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-es-quantized-2026-02-27",
+            idx=58,
+            lang="es",
+            lang2="Spanish",
+            short_name="moonshine_base_es_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-en-quantized-2026-02-27",
+            idx=59,
+            lang="en",
+            lang2="English",
+            short_name="moonshine_base_en_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-moonshine-base-ar-quantized-2026-02-27",
+            idx=60,
+            lang="ar",
+            lang2="Arabic",
+            short_name="moonshine_base_ar_2026_02_27",
+            cmd="""
+            pushd $model_name
+
+            rm -rfv test_wavs
+
+            ls -lh
+
+            popd
+            """,
+        ),
+        Model(
+            model_name="sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25",
+            idx=61,
+            lang="52_lang",
+            lang2="52_lang",
+            short_name="qwen3_asr_0.6B_int8",
             cmd="""
             pushd $model_name
 
